@@ -145,7 +145,7 @@ class Bot(asynchat.async_chat):
     lastSIDUpdate = datetime.fromtimestamp(0)
 
     def forumLogin(bot):
-        text = web.post( "http://www.crimbogrotto.com/ucp.php?","mode=login&username=CGIRC&password=" + forumPassword + "&redirect=./ucp.php?mode=login&redirect=index.php&login=Login");
+        text = web.post( "http://www.crimbogrotto.com/ucp.php?","mode=login&username=CGIRC&password=" + bot.config.relay.forumPassword + "&redirect=./ucp.php?mode=login&redirect=index.php&login=Login");
         SIDMatch = re.search( r'\?sid=([^"]+)"',text )
         bot.cachedSID = SIDMatch.group(1)
         bot.lastSIDUpdate = datetime.now()
