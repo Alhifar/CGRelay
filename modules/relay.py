@@ -6,42 +6,30 @@ from datetime import datetime,timedelta
 import re
 import HTMLParser
 
-logger = tools.OutputRedirect("/home/crimbogrotto/.willie/logs/relaylog.log")
-
-cacheUpdateTime = timedelta(minutes=5)
-
-cachedSID = ""
-lastSIDUpdate = datetime.fromtimestamp(0)
-
-lastMChatID = 0
-lastMChatUpdate = datetime.fromtimestamp(0)
-
-forumPassword = '@PASSWORD@'
-
-def login():
-	text = web.post( "http://www.crimbogrotto.com/ucp.php?","mode=login&username=CGIRC&password=" + forumPassword + "&redirect=./ucp.php?mode=login&redirect=index.php&login=Login");
+#logger = tools.OutputRedirect("/home/crimbogrotto/.willie/logs/relaylog.log")
+'''
+def login(bot):
+	text = web.post( "http://www.crimbogrotto.com/ucp.php?","mode=login&username=CGIRC&password=" + bot.config.relay.forumPassword + "&redirect=./ucp.php?mode=login&redirect=index.php&login=Login");
 	SIDMatch = re.search( r'\?sid=([^"]+)"',text )
-	global cachedSID
-	cachedSID = SIDMatch.group(1)
-	global lastSIDUpdate 
-	lastSIDUpdate = datetime.now()
+	bot.cachedSID = SIDMatch.group(1)
+	bot.lastSIDUpdate = datetime.now()
 	return cachedSID
 	
 
-def getSID():
+def getSID(bot):
+	cacheUpdateTime = timedelta(minutes=5)
 	nextSIDUpdate = lastSIDUpdate + cacheUpdateTime
 	if datetime.now() < nextSIDUpdate:
-		global cachedSID
-		return cachedSID
+		return bot.cachedSID
 	else:
-		return login()
-	
+		return login(bot)
+'''	
 	
 @module.rule('.*')
 @module.disallow_privmsg
 def relay(bot, trigger):
 	#global logger
-	sid = getSID()
+	sid = bot.getForumSID()
 	message = re.sub( r'^\x01ACTION', '', trigger.group(0) )
 	#message = re.sub( r'^\x01\d+(?:,\d+)?', '', message )# Trying to get rid of color codes
 	toPost = web.quote( "[b]" + trigger.nick + ":[/b] " + message )
@@ -53,13 +41,12 @@ def getFromRelay(bot):
 	#global logger
 	if not "#crimbogrotto" in bot.channels:
 		return
-	sid = getSID()
-	global lastMChatID
-	if lastMChatID == 0:
+	sid = bot.getForumSID()
+	if bot.memory['lastMChatID'] == 0:
 			text = web.post( "http://www.crimbogrotto.com/mchat.php","mode=read&room_id=0&sid=" + sid )
 			messageIter = re.finditer( r'<div.+?mess(\d+).+?>.+?<a href=.+?>([^<]+)</a>.+?</span>.+?<div class="mChatMessage">(.+?)</div></div>', text)
 			for messageMatch in messageIter:
-				lastMChatID = int(messageMatch.group(1))
+				bot.memory['lastMChatID'] = int(messageMatch.group(1))
 
 	text = web.post( "http://www.crimbogrotto.com/mchat.php","mode=read&room_id=0&message_last_id="+str(lastMChatID)+"&sid=" + sid )
 	messageIter = re.finditer( r'<div.+?mess(\d+).+?>.+?<a href=.+?>([^<]+)</a>.+?</span>.+?<div class="mChatMessage">(.+?)</div></div>', text)
@@ -80,7 +67,7 @@ def getFromRelay(bot):
 				openBracket = "["
 				closeBracket = "]"
 			bot.msg("#crimbogrotto", openBracket + sender + closeBracket + ": " + parser.unescape(message), 1, False )
-			lastMChatID = int(messageMatch.group(1))
+			bot.memory['lastMChatID'] = int(messageMatch.group(1))
 	return
 
 @module.commands('who')
@@ -94,3 +81,7 @@ def who(bot, trigger):
 	for messageMatch in messageIter:
 		pass
 	bot.reply( messageMatch.group(3) )
+	
+def configure(config)
+	config.add_section('relay')
+	interactive_add('relay', 'forumPassword', 'What is the forum password?')
