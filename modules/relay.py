@@ -40,9 +40,6 @@ def getFromRelay(bot):
 			message = messageMatch.group(3)
 			message = re.sub( r'<img src="\./images/smilies.+?alt="([^"]+?)".+?/>', r'\1', message ) #Replace smilies from forum
 			message = re.sub( r'<a.*?href=\"(.+?)".*?>.*?</a>', r'\1', message ) #Replace links with just url
-			message = re.sub( r'<span style="font-style: italic">(.+?)</span>', '\x09\\1\x09', message ) #Italics
-			message = re.sub( r'<span style="font-weight: bold">(.+?)</span>', '\x02\\1\x02', message ) #Bold
-			message = re.sub( r'<span style="text-decoration: underline">(.+?)</span>', '\x15\\1\x15', message ) #Underline
 			message = re.sub( r'<.*?>', '', message ) #Remove all other tags
 			openBracket = "{"
 			closeBracket = "}"
