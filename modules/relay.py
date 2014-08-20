@@ -13,8 +13,8 @@ import HTMLParser
 def relay(bot, trigger):
 	#global logger
 	sid = bot.getForumSID()
-	message = re.sub( r'^\x01ACTION', '', trigger.group(0) )
-	#message = re.sub( r'^\x01\d+(?:,\d+)?', '', message )# Trying to get rid of color codes
+	message = re.sub( r'^\x01ACTION', '', trigger.group(0) ) #Remove ACTION from /me messages
+	message = re.sub( r'^\x03\d+(?:,\d+)?', '', message ) # Remove color codes
 	toPost = web.quote( '[b]{0}:[/b] {1}'.format(trigger.nick, message) )
 	text = web.post( "http://www.crimbogrotto.com/mchat.php", "room_id=0&mode=add&sid={0}&message={1}".format(sid, toPost) )
 	return
@@ -38,9 +38,9 @@ def getFromRelay(bot):
 		if messageMatch.group(2) != "CGIRC":
 			sender = messageMatch.group(2)
 			message = messageMatch.group(3)
-			message = re.sub( r'<img src="\./images/smilies.+?alt="([^"]+?)".+?/>', r'\1', message )
-			message = re.sub( r'<a.*?href=\"(.+?)".*?>.*?</a>', r'\1', message )
-			message = re.sub( r'<.*?>', '', message )
+			message = re.sub( r'<img src="\./images/smilies.+?alt="([^"]+?)".+?/>', r'\1', message ) #Replace smilies from forum
+			message = re.sub( r'<a.*?href=\"(.+?)".*?>.*?</a>', r'\1', message ) #Replace links with just url
+			message = re.sub( r'<.*?>', '', message ) #Remove all other tags
 			openBracket = "{"
 			closeBracket = "}"
 			if sender == "CGBot":
