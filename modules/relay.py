@@ -42,7 +42,7 @@ def getFromRelay(bot):
 	if not "#crimbogrotto" in bot.channels:
 		return
 	sid = bot.getForumSID()
-	if bot.memory['lastMChatID'] == 0:
+	if not 'lastMChatID' in bot.memory.keys():
 			text = web.post( "http://www.crimbogrotto.com/mchat.php","mode=read&room_id=0&sid=" + sid )
 			messageIter = re.finditer( r'<div.+?mess(\d+).+?>.+?<a href=.+?>([^<]+)</a>.+?</span>.+?<div class="mChatMessage">(.+?)</div></div>', text)
 			for messageMatch in messageIter:
@@ -82,6 +82,6 @@ def who(bot, trigger):
 		pass
 	bot.reply( messageMatch.group(3) )
 	
-def configure(config)
+def configure(config):
 	config.add_section('relay')
 	interactive_add('relay', 'forumPassword', 'What is the forum password?')
