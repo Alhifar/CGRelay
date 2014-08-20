@@ -67,4 +67,4 @@ def who(bot, trigger):
 	
 def configure(config):
 	config.add_section('relay')
-	interactive_add('relay', 'forumPassword', 'What is the forum password?')
+	interactive_add('relay', 'forum_password', 'What is the forum password?')
