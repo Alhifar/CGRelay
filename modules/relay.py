@@ -7,23 +7,6 @@ import re
 import HTMLParser
 
 #logger = tools.OutputRedirect("/home/crimbogrotto/.willie/logs/relaylog.log")
-'''
-def login(bot):
-	text = web.post( "http://www.crimbogrotto.com/ucp.php?","mode=login&username=CGIRC&password=" + bot.config.relay.forumPassword + "&redirect=./ucp.php?mode=login&redirect=index.php&login=Login");
-	SIDMatch = re.search( r'\?sid=([^"]+)"',text )
-	bot.cachedSID = SIDMatch.group(1)
-	bot.lastSIDUpdate = datetime.now()
-	return cachedSID
-	
-
-def getSID(bot):
-	cacheUpdateTime = timedelta(minutes=5)
-	nextSIDUpdate = lastSIDUpdate + cacheUpdateTime
-	if datetime.now() < nextSIDUpdate:
-		return bot.cachedSID
-	else:
-		return login(bot)
-'''	
 	
 @module.rule('.*')
 @module.disallow_privmsg
@@ -32,8 +15,8 @@ def relay(bot, trigger):
 	sid = bot.getForumSID()
 	message = re.sub( r'^\x01ACTION', '', trigger.group(0) )
 	#message = re.sub( r'^\x01\d+(?:,\d+)?', '', message )# Trying to get rid of color codes
-	toPost = web.quote( "[b]" + trigger.nick + ":[/b] " + message )
-	text = web.post( "http://www.crimbogrotto.com/mchat.php", "room_id=0&mode=add&sid=" + sid + "&message=" + toPost )
+	toPost = web.quote( '[b]{0}:[/b] {1}'.format(trigger.nick, message) )
+	text = web.post( "http://www.crimbogrotto.com/mchat.php", "room_id=0&mode=add&sid={0}&message={1}".format(sid, toPost) )
 	return
 	
 @module.interval(3)
@@ -43,12 +26,12 @@ def getFromRelay(bot):
 		return
 	sid = bot.getForumSID()
 	if not 'lastMChatID' in bot.memory.keys():
-			text = web.post( "http://www.crimbogrotto.com/mchat.php","mode=read&room_id=0&sid=" + sid )
+			text = web.post( 'http://www.crimbogrotto.com/mchat.php','mode=read&room_id=0&sid={0}'.format(sid) )
 			messageIter = re.finditer( r'<div.+?mess(\d+).+?>.+?<a href=.+?>([^<]+)</a>.+?</span>.+?<div class="mChatMessage">(.+?)</div></div>', text)
 			for messageMatch in messageIter:
 				bot.memory['lastMChatID'] = int(messageMatch.group(1))
 
-	text = web.post( "http://www.crimbogrotto.com/mchat.php","mode=read&room_id=0&message_last_id="+str(bot.memory['lastMChatID'])+"&sid=" + sid )
+	text = web.post( 'http://www.crimbogrotto.com/mchat.php','mode=read&room_id=0&message_last_id={0!s}&sid={1}'.format(bot.memory['lastMChatID'], sid) )
 	messageIter = re.finditer( r'<div.+?mess(\d+).+?>.+?<a href=.+?>([^<]+)</a>.+?</span>.+?<div class="mChatMessage">(.+?)</div></div>', text)
 	parser = HTMLParser.HTMLParser()
 	for messageMatch in messageIter:
@@ -66,7 +49,7 @@ def getFromRelay(bot):
 				message = nameMatch.group(2)
 				openBracket = "["
 				closeBracket = "]"
-			bot.msg("#crimbogrotto", openBracket + sender + closeBracket + ": " + parser.unescape(message), 10, False )
+			bot.msg("#crimbogrotto", '{0}{1}{2}: {3}'.format(openBracket, sender, closeBracket, parser.unescape(message)), 10, False )
 			bot.memory['lastMChatID'] = int(messageMatch.group(1))
 	return
 
