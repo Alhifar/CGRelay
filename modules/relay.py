@@ -48,7 +48,7 @@ def getFromRelay(bot):
 			for messageMatch in messageIter:
 				bot.memory['lastMChatID'] = int(messageMatch.group(1))
 
-	text = web.post( "http://www.crimbogrotto.com/mchat.php","mode=read&room_id=0&message_last_id="+str(lastMChatID)+"&sid=" + sid )
+	text = web.post( "http://www.crimbogrotto.com/mchat.php","mode=read&room_id=0&message_last_id="+str(bot.memory['lastMChatID'])+"&sid=" + sid )
 	messageIter = re.finditer( r'<div.+?mess(\d+).+?>.+?<a href=.+?>([^<]+)</a>.+?</span>.+?<div class="mChatMessage">(.+?)</div></div>', text)
 	parser = HTMLParser.HTMLParser()
 	for messageMatch in messageIter:
