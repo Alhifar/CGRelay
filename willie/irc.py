@@ -49,9 +49,6 @@ from datetime import datetime
 if sys.version_info.major >= 3:
     unicode = str
 
-forumPassword = '@PASSWORD@'
-
-
 class Origin(object):
     source = re.compile(r'([^!]*)!?([^@]*)@?(.*)')
 
@@ -145,7 +142,7 @@ class Bot(asynchat.async_chat):
     lastSIDUpdate = datetime.fromtimestamp(0)
 
     def forumLogin(bot):
-        text = web.post( "http://www.crimbogrotto.com/ucp.php?","mode=login&username=CGIRC&password=" + bot.config.relay.forumPassword + "&redirect=./ucp.php?mode=login&redirect=index.php&login=Login");
+        text = web.post( "http://www.crimbogrotto.com/ucp.php?","mode=login&username=CGIRC&password=" + config.relay.forumPassword + "&redirect=./ucp.php?mode=login&redirect=index.php&login=Login");
         SIDMatch = re.search( r'\?sid=([^"]+)"',text )
         bot.cachedSID = SIDMatch.group(1)
         bot.lastSIDUpdate = datetime.now()
@@ -526,7 +523,7 @@ class Bot(asynchat.async_chat):
         # Now that we've sent the first part, we need to send the rest. Doing
         # this recursively seems easier to me than iteratively
         if excess:
-            self.msg(recipient, excess, max_messages - 1)
+            self.msg(recipient, excess, max_messages - 1, relay)
 
     def notice(self, dest, text):
         """Send an IRC NOTICE to a user or a channel.
