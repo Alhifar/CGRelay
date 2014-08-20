@@ -57,7 +57,7 @@ def getFromRelay(bot):
 @module.require_privmsg
 def who(bot, trigger):
 	sid = bot.getForumSID()
-	whoText = web.post( "http://www.crimbogrotto.com/mchat.php","mode=read&room_id=6&sid=" + sid )
+	whoText = web.post( 'http://www.crimbogrotto.com/mchat.php','mode=read&room_id=6&sid={0}'.format(sid) )
 	lastWhoID = 0
 	messageIter = re.finditer( r'<div.+?mess(\d+).+?>.+?<a href=.+?>([^<]+)</a>.+?</span>.+?<div class="mChatMessage">(.+?)</div></div>', whoText)
 	messageMatch = None
