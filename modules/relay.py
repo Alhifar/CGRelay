@@ -52,6 +52,8 @@ def getFromRelay(bot):
 				message = nameMatch.group(2)
 				openBracket = "["
 				closeBracket = "]"
+			if message == '':
+				return
 			bot.msg("#crimbogrotto", u'{0}{1}{2}: {3}'.format(openBracket, sender, closeBracket, parser.unescape(message)), 10, False )
 			bot.memory['lastMChatID'] = int(messageMatch.group(1))
 	return
