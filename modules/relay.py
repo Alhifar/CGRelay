@@ -15,7 +15,7 @@ def relay(bot, trigger):
 	sid = bot.getForumSID()
 	message = re.sub( r'^\x01ACTION', '', trigger.group(0) ) #Remove ACTION from /me messages
 	message = re.sub( r'^\x03\d+(?:,\d+)?', '', message ) # Remove color codes
-	toPost = web.quote( '[b]{0}:[/b] {1}'.format(trigger.nick, message) )
+	toPost = web.quote( u'[b]{0}:[/b] {1}'.format(trigger.nick, message) )
 	text = web.post( "http://www.crimbogrotto.com/mchat.php", "room_id=0&mode=add&sid={0}&message={1}".format(sid, toPost) )
 	return
 	
@@ -49,7 +49,7 @@ def getFromRelay(bot):
 				message = nameMatch.group(2)
 				openBracket = "["
 				closeBracket = "]"
-			bot.msg("#crimbogrotto", '{0}{1}{2}: {3}'.format(openBracket, sender, closeBracket, parser.unescape(message)), 10, False )
+			bot.msg("#crimbogrotto", u'{0}{1}{2}: {3}'.format(openBracket, sender, closeBracket, parser.unescape(message)), 10, False )
 			bot.memory['lastMChatID'] = int(messageMatch.group(1))
 	return
 
