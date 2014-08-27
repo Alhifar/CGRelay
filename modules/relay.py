@@ -15,6 +15,7 @@ def relay(bot, trigger):
 	sid = bot.getForumSID()
 	message = re.sub( r'^\x01ACTION', '', trigger.group(0) ) #Remove ACTION from /me messages
 	message = re.sub( r'^\x03\d+(?:,\d+)?', '', message ) # Remove color codes
+	message = re.sub( r'[^\x00-\x7f]', '',message ) #remove non-ascii characters 'cause forum chat and kol chat are dumb
 	toPost = web.quote( u'[b]{0}:[/b] {1}'.format(trigger.nick, message) )
 	text = web.post( "http://www.crimbogrotto.com/mchat.php", "room_id=0&mode=add&sid={0}&message={1}".format(sid, toPost) )
 	return
