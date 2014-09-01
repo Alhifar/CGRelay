@@ -15,7 +15,8 @@ def relay(bot, trigger):
 	sid = bot.getForumSID()
 	message = re.sub( r'^\x01ACTION', '', trigger.group(0) ) #Remove ACTION from /me messages
 	message = re.sub( r'^\x03\d+(?:,\d+)?', '', message ) # Remove color codes
-	message = re.sub( r'[^\x00-\x7f]', '',message ) #remove non-ascii characters 'cause forum chat and kol chat are dumb
+	message = re.sub( r'[^\x00-\x7f]', '', message ) #remove non-ascii characters 'cause forum chat and kol chat are dumb
+	message = re.sub( r'(?i)irc:.*', '', message ) #messages starting with "irc:" are hidden from kol chat
 	if message == '':
 		return
 	toPost = web.quote( u'[b]{0}:[/b] {1}'.format(trigger.nick, message) )
