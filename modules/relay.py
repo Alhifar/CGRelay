@@ -32,7 +32,7 @@ class Relay:
 	@module.commands('set_broadcast_interval')
 	def setBroadcastInterval(bot, trigger):
 		this.broadcastInterval = int(trigger.group(2))
-		bot.reply('Set broadcast announcement interval to {}'.format(this.broadcastInterval))
+		bot.reply('Set broadcast announcement interval to {} minutes'.format(this.broadcastInterval))
 
 	@module.interval(3)
 	def getFromRelay(bot):
