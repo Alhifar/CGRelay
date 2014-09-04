@@ -8,7 +8,7 @@ import HTMLParser
 
 #logger = tools.OutputRedirect("/home/crimbogrotto/.willie/logs/relaylog.log")
 class Relay:
-	broadcastTimeout = 60
+	broadcastInterval = 60
 	
 	@module.rule('.*')
 	@module.disallow_privmsg
@@ -25,13 +25,14 @@ class Relay:
 		text = web.post( "http://www.crimbogrotto.com/mchat.php", "room_id=0&mode=add&sid={0}&message={1}".format(sid, toPost) )
 		return
 
-	@module.interval(60*this.broadcastInterval)
+	@module.interval(60*broadcastInterval)
 	def postBroadcastLine(bot):
 		bot.msg('#crimbogrotto', r'http://grooveshark.com/#!/thecgradio/broadcast' )
 
 	@module.commands('set_broadcast_interval')
 	def setBroadcastInterval(bot, trigger):
 		this.broadcastInterval = int(trigger.group(2))
+		bot.reply('Set broadcast announcement interval to {}'.format(this.broadcastInterval))
 
 	@module.interval(3)
 	def getFromRelay(bot):
