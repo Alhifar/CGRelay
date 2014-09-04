@@ -24,7 +24,7 @@ def relay(bot, trigger):
 	return
 
 @module.interval(1800)
-def postBroadcastLine(bot)
+def postBroadcastLine(bot):
 	bot.msg('#crimbogrotto', r'http://grooveshark.com/#!/thecgradio/broadcast' )
 	
 @module.interval(3)
