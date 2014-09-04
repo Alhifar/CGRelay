@@ -22,6 +22,10 @@ def relay(bot, trigger):
 	toPost = web.quote( u'[b]{0}:[/b] {1}'.format(trigger.nick, message) )
 	text = web.post( "http://www.crimbogrotto.com/mchat.php", "room_id=0&mode=add&sid={0}&message={1}".format(sid, toPost) )
 	return
+
+@module.interval(1800)
+def postBroadcastLine(bot)
+	bot.msg('#crimbogrotto', r'http://grooveshark.com/#!/thecgradio/broadcast' )
 	
 @module.interval(3)
 def getFromRelay(bot):
