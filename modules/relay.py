@@ -30,7 +30,7 @@ class Relay:
 		bot.msg('#crimbogrotto', r'http://grooveshark.com/#!/thecgradio/broadcast' )
 
 	@module.commands('set_broadcast_interval')
-	def setBroadcastInterval(bot, trigger)
+	def setBroadcastInterval(bot, trigger):
 		this.broadcastInterval = int(trigger.group(2))
 
 	@module.interval(3)
