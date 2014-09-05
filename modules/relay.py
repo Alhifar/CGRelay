@@ -27,7 +27,7 @@ def relay(bot, trigger):
 def postBroadcastLine(bot):
 	with open('/williedata/currentSong','r') as songFile:
 		currentSong = songFile.read()
-	bot.msg('#crimbogrotto', 'Listen to CG Radio, now playing {}!'.format(currentSong)
+	bot.msg('#crimbogrotto', 'Listen to CG Radio, now playing {}!'.format(currentSong))
 	bot.msg('#crimbogrotto', r'http://grooveshark.com/#!/thecgradio/broadcast' )
 
 @module.commands('set_broadcast_interval')
