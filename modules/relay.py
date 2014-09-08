@@ -1,8 +1,7 @@
 from willie import module
 from willie import web
-from willie import tools
+#from willie import tools
 import willie.irc as irc
-from datetime import datetime,timedelta
 import re
 import HTMLParser
 
@@ -44,8 +43,8 @@ def relay(bot, trigger):
 def postBroadcastLine(bot, trigger=None):
 	with open('/williedata/currentSong','r') as songFile:
 		currentSong = songFile.read()
-	bot.msg('#crimbogrotto', 'Listen to CG Radio, now playing {}!'.format(currentSong))
-	bot.msg('#crimbogrotto', r'http://grooveshark.com/#!/thecgradio/broadcast' )
+	bot.msg( '#crimbogrotto', 'Listen to CG Radio, now playing {}!'.format(currentSong) )
+	bot.msg( '#crimbogrotto', r'http://grooveshark.com/#!/thecgradio/broadcast' )
 
 #@module.commands('set_broadcast_interval')
 #def setBroadcastInterval(bot, trigger):
@@ -65,7 +64,7 @@ def getFromRelay(bot):
 			bot.memory['lastMChatID'] = int( messageList[-1].group(1) )
 
 	text = web.post( 'http://www.crimbogrotto.com/mchat.php','mode=read&room_id=0&message_last_id={0!s}&sid={1}'.format(bot.memory['lastMChatID'], sid) )
-	messageIter = re.finditer( mchatPattern, text)
+	messageIter = re.finditer( mchatPattern, text )
 	parser = HTMLParser.HTMLParser()
 	for messageMatch in messageIter:
 		if messageMatch.group(2) != "CGIRC":
