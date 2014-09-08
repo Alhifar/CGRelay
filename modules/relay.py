@@ -35,15 +35,15 @@ def relay(bot, trigger):
 	if message == '':
 		return
 	toPost = web.quote( u'[b]{0}:[/b] {1}'.format(trigger.nick, message) )
-	text = web.post( "http://www.crimbogrotto.com/mchat.php", "room_id=0&mode=add&sid={0}&message={1}".format(sid, toPost) )
+	text = web.post( 'http://www.crimbogrotto.com/mchat.php', 'room_id=0&mode=add&sid={0}&message={1}'.format(sid, toPost) )
 	return
 
 @module.commands('announce_broadcast')
 @module.interval(3600)
 def postBroadcastLine(bot, trigger=None):
-	with open('/williedata/currentSong','r') as songFile:
+	with open( '/williedata/currentSong', 'r' ) as songFile:
 		currentSong = songFile.read()
-	bot.msg( '#crimbogrotto', 'Listen to CG Radio, now playing {}!'.format(currentSong) )
+	bot.msg( '#crimbogrotto', 'Listen to CG Radio, now playing {0}!'.format(currentSong) )
 	bot.msg( '#crimbogrotto', r'http://grooveshark.com/#!/thecgradio/broadcast' )
 
 #@module.commands('set_broadcast_interval')
@@ -63,28 +63,28 @@ def getFromRelay(bot):
 			messageList = re.findall( mchatPattern, text )
 			bot.memory['lastMChatID'] = int( messageList[-1].group(1) )
 
-	text = web.post( 'http://www.crimbogrotto.com/mchat.php','mode=read&room_id=0&message_last_id={0!s}&sid={1}'.format(bot.memory['lastMChatID'], sid) )
+	text = web.post( 'http://www.crimbogrotto.com/mchat.php','mode=read&room_id=0&message_last_id={0!s}&sid={1}'.format( bot.memory['lastMChatID'], sid ) )
 	messageIter = re.finditer( mchatPattern, text )
 	parser = HTMLParser.HTMLParser()
 	for messageMatch in messageIter:
-		if messageMatch.group(2) != "CGIRC":
+		if messageMatch.group(2) != 'CGIRC':
 			sender = messageMatch.group(2)
 			message = messageMatch.group(3)
 			message = re.sub( smiliesPattern, r'\1', message ) #Replace smilies from forum
 			message = re.sub( linkPattern, r'\1', message ) #Replace links with just url
 			message = re.sub( tagPattern, '', message ) #Remove all other tags
-			openBracket = "{"
-			closeBracket = "}"
-			if sender == "CGBot":
+			openBracket = '{'
+			closeBracket = '}'
+			if sender == 'CGBot':
 				nameMatch = re.match( CGBotMessagePattern, message )
 				sender = nameMatch.group(1)
 				message = nameMatch.group(2)
-				openBracket = "["
-				closeBracket = "]"
+				openBracket = '['
+				closeBracket = ']'
 			if message == '':
 				return
-			bot.msg("#crimbogrotto", u'{0}{1}{2}: {3}'.format(openBracket, sender, closeBracket, parser.unescape(message)), 10, False )
-			bot.memory['lastMChatID'] = int(messageMatch.group(1))
+			bot.msg( '#crimbogrotto', u'{0}{1}{2}: {3}'.format( openBracket, sender, closeBracket, parser.unescape(message) ), 10, False )
+			bot.memory['lastMChatID'] = int( messageMatch.group(1) )
 	return
 
 @module.commands('who')
@@ -98,5 +98,5 @@ def who(bot, trigger):
 	bot.reply( messageMatch.group(3) )
 
 def configure(config):
-	config.add_section('relay')
-	interactive_add('relay', 'forum_password', 'What is the forum password?')
+	config.add_section( 'relay' )
+	interactive_add( 'relay', 'forum_password', 'What is the forum password?' )
