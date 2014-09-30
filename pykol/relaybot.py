@@ -1,19 +1,26 @@
 from time import sleep
 from kol.Session import Session
-from kol.request.GetChatMessagesRequest import GetChatMessagesRequest
-from kol.request.SendChatRequest import SendChatRequest
+from kol.manager.ChatManager import ChatManager
+import requests
+import re
 
-import urllib
-
-session = Session()
-password = 'thepassword'
-session.login( 'CGRelay', password )
-while True:
-	chatRequest = getChatMessagesRequest(session)
-	responseData = chatRequest.doRequest()
-
-	chatMessages = responseData['chatMessages']
-
-	for message in chatMessages:
-		print message
-	sleep(1)
+class RelayBot(object):
+	def __init__(self):
+		self.session = Session()
+		self.password = 'thepassword'
+		self.forumPassword = 'theotherpassword'
+		session.login( 'CGRelay', password )
+		self.chatManager = ChatManager(session)
+		self.SID = ''
+	def forumLogin():
+		params = {'mode': 'login', 'username': 'CGBot', 'password': self.forumPassword}
+			r = requests.post('http://www.crimbogrotto.com/ucp.php', params=params)
+			m = re.match(r'\?sid=([^"]+)"', r.text)
+			self.SID = m.group(0)
+	def runBot():
+		forumLogin()
+		while True:
+			chatMessages = self.chatManager.getNewChatMessages()
+			for message in chatMessages:
+				#do stuff
+			sleep(1)
