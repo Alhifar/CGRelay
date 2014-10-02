@@ -39,18 +39,11 @@ def relay(bot, trigger):
 	return
 
 @module.commands('announce_broadcast')
-@module.interval(3600)
 def postBroadcastLine(bot, trigger=None):
 	with open( '/williedata/currentSong', 'r' ) as songFile:
 		currentSong = songFile.read()
 	bot.msg( '#crimbogrotto', 'Listen to CG Radio, now playing {0}!'.format(currentSong) )
 	bot.msg( '#crimbogrotto', r'http://grooveshark.com/#!/thecgradio/broadcast' )
-
-#@module.commands('set_broadcast_interval')
-#def setBroadcastInterval(bot, trigger):
-#	del postBroadcastLine.interval[:]
-#	postBroadcastLine.interval.append(60 * int(trigger.group(2)))
-#	bot.reply('Set broadcast announcement interval to {} minutes'.format(trigger.group(2)))
 
 @module.interval(3)
 def getFromRelay(bot):
