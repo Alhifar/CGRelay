@@ -61,7 +61,7 @@ def getFromRelay(bot):
 	if not 'lastMChatID' in bot.memory.keys():
 			text = web.post( 'http://www.crimbogrotto.com/mchat.php','mode=read&room_id=0&sid={0}'.format(sid) )
 			messageList = re.findall( mchatPattern, text )
-			bot.memory['lastMChatID'] = int( messageList[-1].group(1) )
+			bot.memory['lastMChatID'] = int( messageList[-1][0])
 
 	text = web.post( 'http://www.crimbogrotto.com/mchat.php','mode=read&room_id=0&message_last_id={0!s}&sid={1}'.format( bot.memory['lastMChatID'], sid ) )
 	messageIter = re.finditer( mchatPattern, text )
@@ -86,6 +86,11 @@ def getFromRelay(bot):
 			bot.msg( '#crimbogrotto', u'{0}{1}{2}: {3}'.format( openBracket, sender, closeBracket, parser.unescape(message) ), 10, False )
 			bot.memory['lastMChatID'] = int( messageMatch.group(1) )
 	return
+
+@module.rule('.*?[dD]enis.*?')
+def denisKick(bot, trigger):
+	if trigger.nick != 'CGBot' and trigger.nick != 'Alhifar':
+		bot.write( ['KICK', trigger.sender, trigger.nick, 'Bad {0}'.format( trigger.nick )] )
 
 @module.commands('who')
 @module.require_privmsg
