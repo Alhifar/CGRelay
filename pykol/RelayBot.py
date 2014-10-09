@@ -23,18 +23,21 @@ class RelayBot(object):
 		r = requests.post('http://www.crimbogrotto.com/ucp.php', data=data)
 		self.cookies = r.cookies
 	
-	def mchatGet(self, roomID):
-		if self.lastMessageID > 0:
-			data = {'mode': 'read', 'room_id': roomID, 'message_last_id': self.lastMessageID}
-		else:
+	def mchatRead(self, roomID):
+		if self.lastMessageID == 0:
 			data = {'mode': 'read', 'room_id': roomID}
+			r = requests.post('http://www.crimbogrotto.com/mchat.php', data=data, cookies = self.cookies)
+			lastIDSoup = BeautifulSoup(r.text)
+			print(type(lastIDSoup.find_all('div', class_='mchatHover')))
+			self.lastMessageID = int(lastIDSoup.find_all('div', class_='mchatHover')[-1]['id'][4:])
+		data = {'mode': 'read', 'room_id': roomID, 'message_last_id': self.lastMessageID}
 		r = requests.post('http://www.crimbogrotto.com/mchat.php', data=data, cookies = self.cookies)
 		mchatSoup = BeautifulSoup(r.text)
-		with open('temp.txt', 'w') as f:
-			f.write(mchatSoup.find_all('div', class_='mChatHover'))
-		
+		for messageDiv in mchatSoup.find_all('div', class_='mChatHover'):
+			name = messageDiv.find('a', href=re.compile('memberlist.php')).string
+			print( name )
 	
-	def mchatPost(self, message, roomID):
+	def mchatAdd(self, message, roomID):
 		data = {'mode': 'add', 'room_id': roomID, 'message': message}
 		r = requests.post('http://www.crimbogrotto.com/mchat.php', data=data, cookies = self.cookies)
 	
@@ -45,9 +48,9 @@ class RelayBot(object):
 			for message in chatMessages:
 				if 'channel' in message.keys() and message['channel'] in RelayBot.rooms.keys():
 					toSend = '[b]{0}:[/b] {1}'.format(message['userName'], message['text'])
-					self.mchatPost(toSend, RelayBot.rooms[message['channel']])
+					self.mchatAdd(toSend, RelayBot.rooms[message['channel']])
 			sleep(1)
 
 bot = RelayBot()
 bot.forumLogin()
-bot.mchatGet(0)
+bot.mchatRead(0)
