@@ -6,6 +6,9 @@ import requests
 import re
 
 class RelayBot(object):
+	rooms = {'clan': 0, 'dread': 1, 'hobopolis': 2, 'slimetube': 3, 'talkie': 5}
+	channels = {0: 'clan', 1: 'dread', 2: 'hobopolis', 3: 'slimetube', 5: 'talkie'}
+	
 	def __init__(self):
 		self.session = Session()
 		self.password = 'thepassword'
@@ -39,9 +42,9 @@ class RelayBot(object):
 		while True:
 			chatMessages = self.chatManager.getNewChatMessages()
 			for message in chatMessages:
-				if 'channel' in message.keys():
-					print(message['channel'])
-				#self.mchatPost(message['text'], rooms[message['channel']])
+				if 'channel' in message.keys() and message['channel'] in rooms.keys():
+					toSend = '[b]{0}:[/b] {1}'.format(message['userName'], message['text'])
+					self.mchatPost(toSend, rooms[message['channel']])
 			sleep(1)
 
 bot = RelayBot()
