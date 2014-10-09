@@ -16,6 +16,7 @@ class RelayBot(object):
 		self.session.login( 'CGRelay', self.password )
 		self.chatManager = ChatManager(self.session)
 		self.cookies = {}
+		self.lastMessageID = 0
 	
 	def forumLogin(self):		
 		data = {'mode': 'login', 'username': 'CGBot', 'password': self.forumPassword, 'login': 'Login'}
@@ -23,8 +24,15 @@ class RelayBot(object):
 		self.cookies = r.cookies
 	
 	def mchatGet(self, roomID):
-		data = {'mode': 'read', 'room_id': roomID, 'message_last_id': lastID}
-		#mchat.php?mode=read&room_id=" + room_id + "&message_last_id=" + lid + "&sid=" + sid
+		if self.lastMessageID > 0:
+			data = {'mode': 'read', 'room_id': roomID, 'message_last_id': self.lastMessageID}
+		else:
+			data = {'mode': 'read', 'room_id': roomID}
+		r = requests.post('http://www.crimbogrotto.com/mchat.php', data=data, cookies = self.cookies)
+		mchatSoup = BeautifulSoup(r.text)
+		with open('temp.txt', 'w') as f:
+			f.write(mchatSoup.find_all('div', class_='mChatHover'))
+		
 	
 	def mchatPost(self, message, roomID):
 		data = {'mode': 'add', 'room_id': roomID, 'message': message}
@@ -35,10 +43,11 @@ class RelayBot(object):
 		while True:
 			chatMessages = self.chatManager.getNewChatMessages()
 			for message in chatMessages:
-				if 'channel' in message.keys() and message['channel'] in rooms.keys():
+				if 'channel' in message.keys() and message['channel'] in RelayBot.rooms.keys():
 					toSend = '[b]{0}:[/b] {1}'.format(message['userName'], message['text'])
-					self.mchatPost(toSend, rooms[message['channel']])
+					self.mchatPost(toSend, RelayBot.rooms[message['channel']])
 			sleep(1)
 
 bot = RelayBot()
-bot.runBot()
+bot.forumLogin()
+bot.mchatGet(0)
