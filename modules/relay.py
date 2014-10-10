@@ -80,7 +80,7 @@ def getFromRelay(bot):
 			bot.memory['lastMChatID'] = int( messageMatch.group(1) )
 	return
 
-@module.rule('.*?[dD]enis.*?')
+@module.rule('(?i).*?denis.*?')
 def denisKick(bot, trigger):
 	if trigger.nick != 'CGBot' and trigger.nick != 'Alhifar':
 		bot.write( ['KICK', trigger.sender, trigger.nick, 'Bad {0}'.format( trigger.nick )] )
