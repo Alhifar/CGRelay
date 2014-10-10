@@ -13,8 +13,9 @@ class RelayBot(object):
 	
 	def __init__(self):
 		self.session = Session()
-		self.password = 'thepassword'
-		self.forumPassword = 'theotherpassword'
+		with open( 'passwords', 'r') as f:
+			self.password = f.readline().strip()
+			self.forumPassword = f.readline().strip()
 		self.session.login( 'CGRelay', self.password )
 		self.chatManager = ChatManager(self.session)
 		self.cookies = {}
@@ -50,7 +51,6 @@ class RelayBot(object):
 				openBracket = '{'
 				closeBracket = '}'
 			toSend = '/{0} {1}{2}{3} {4}'.format(RelayBot.channels[roomID], openBracket, name, closeBracket, message)
-			print(toSend)
 			self.chatManager.sendChatMessage(toSend)
 	
 	def mchatAdd(self, message, roomID):
@@ -62,7 +62,9 @@ class RelayBot(object):
 		while True:
 			chatMessages = self.chatManager.getNewChatMessages()
 			for message in chatMessages:
-				if 'channel' in message.keys() and message['channel'] in RelayBot.rooms.keys():
+				if ('channel' in message.keys()
+				and message['channel'] in RelayBot.rooms.keys()
+				and message['userName'] != 'CGRelay'):
 					toSend = '[b]{0}:[/b] {1}'.format(message['userName'], message['text'])
 					self.mchatAdd(toSend, RelayBot.rooms[message['channel']])
 			for room in RelayBot.channels:
