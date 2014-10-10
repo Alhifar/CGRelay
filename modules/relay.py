@@ -92,7 +92,7 @@ def who(bot, trigger):
 	whoText = web.post( 'http://www.crimbogrotto.com/mchat.php','mode=read&room_id=6&sid={0}'.format(sid) )
 	lastWhoID = 0
 	messageList = re.findall( whoPattern, whoText )
-	bot.msg( trigger.nick, messageList[-1][2].decode('utf-8') )
+	bot.msg( trigger.nick, messageList[-1][2].decode('utf-8'), relay=False )
 
 def configure(config):
 	config.add_section( 'relay' )
