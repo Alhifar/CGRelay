@@ -13,7 +13,7 @@ class RelayBot(object):
 	
 	def __init__(self):
 		self.session = Session()
-		with open( 'passwords', 'r') as f:
+		with open( 'passwords', 'r' ) as f:
 			self.password = f.readline().strip()
 			self.forumPassword = f.readline().strip()
 		self.session.login( 'CGRelay', self.password )
@@ -23,39 +23,39 @@ class RelayBot(object):
 	
 	def forumLogin(self):		
 		data = {'mode': 'login', 'username': 'CGBot', 'password': self.forumPassword, 'login': 'Login'}
-		r = requests.post('http://www.crimbogrotto.com/ucp.php', data=data)
+		r = requests.post( 'http://www.crimbogrotto.com/ucp.php', data=data )
 		self.cookies = r.cookies
 	
 	def mchatRead(self, roomID):
 		if self.lastMessageID[roomID] == 0:
 			data = {'mode': 'read', 'room_id': roomID}
-			r = requests.post('http://www.crimbogrotto.com/mchat.php', data=data, cookies = self.cookies)
+			r = requests.post( 'http://www.crimbogrotto.com/mchat.php', data=data, cookies = self.cookies )
 			lastIDSoup = BeautifulSoup(r.text)
-			self.lastMessageID[roomID] = int(lastIDSoup.find_all('div', class_='mChatHover')[-1]['id'][4:])
+			self.lastMessageID[roomID] = int( lastIDSoup.find_all('div', class_='mChatHover')[-1]['id'][4:] )
 		data = {'mode': 'read', 'room_id': roomID, 'message_last_id': self.lastMessageID[roomID]}
 		
-		r = requests.post('http://www.crimbogrotto.com/mchat.php', data=data, cookies = self.cookies)
+		r = requests.post( 'http://www.crimbogrotto.com/mchat.php', data=data, cookies = self.cookies )
 		mchatSoup = BeautifulSoup(r.text)
-		for messageDiv in mchatSoup.find_all('div', class_='mChatHover'):
-			name = messageDiv.find('a', href=RelayBot.memberlistPattern).string
-			self.lastMessageID[roomID] = int(messageDiv['id'][4:])
+		for messageDiv in mchatSoup.find_all( 'div', class_='mChatHover' ):
+			name = messageDiv.find( 'a', href=RelayBot.memberlistPattern ).string
+			self.lastMessageID[roomID] = int( messageDiv['id'][4:] )
 			if name == 'CGBot':
 				continue
 			message = messageDiv.find('div', class_='mChatMessage').get_text()
 			openBracket = '['
 			closeBracket = ']'
 			if name == 'CGIRC':
-				IRCMessageMatch = re.match(RelayBot.IRCMessagePattern, message)
+				IRCMessageMatch = re.match( RelayBot.IRCMessagePattern, message )
 				name = IRCMessageMatch.group(1)
 				message = IRCMessageMatch.group(2)
 				openBracket = '{'
 				closeBracket = '}'
-			toSend = '/{0} {1}{2}{3} {4}'.format(RelayBot.channels[roomID], openBracket, name, closeBracket, message)
+			toSend = '/{0} {1}{2}{3} {4}'.format( RelayBot.channels[roomID], openBracket, name, closeBracket, message )
 			self.chatManager.sendChatMessage(toSend)
 	
 	def mchatAdd(self, message, roomID):
 		data = {'mode': 'add', 'room_id': roomID, 'message': message}
-		r = requests.post('http://www.crimbogrotto.com/mchat.php', data=data, cookies = self.cookies)
+		r = requests.post( 'http://www.crimbogrotto.com/mchat.php', data=data, cookies = self.cookies )
 	
 	def runBot(self):
 		self.forumLogin()
