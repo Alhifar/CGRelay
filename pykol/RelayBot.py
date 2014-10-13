@@ -63,15 +63,19 @@ class RelayBot(object):
 		r = requests.post( 'http://www.crimbogrotto.com/mchat.php', data=data, cookies = self.cookies )
 	
 	def postWho(self, message):
-		toSend = ', '.join( [user['userName'] for user in message['users']] )
+		toSend = ', '.join( [user['userName'] for user in message[0]['users']] )
 		self.mchatAdd( toSend, RelayBot.rooms['who'] )
 	
 	def runBot(self):
 		self.forumLogin()
+		needsWho = True
 		while True:
-			# Every 15 minutes, send /who
-			if datetime.now().minute % 15 == 0:
+			# Every 15 minutes, send /who once
+			if needsWho and datetime.now().minute % 15 == 0:
 				self.postWho( self.chatManager.sendChatMessage('/who') )
+				needsWho = False
+			else if datetime.now().minute % 15 != 0:
+				needsWho = True
 				
 			chatMessages = self.chatManager.getNewChatMessages()
 			for message in chatMessages:
