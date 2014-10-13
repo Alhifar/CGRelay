@@ -1,4 +1,5 @@
 from time import sleep
+from datetime import datetime
 from kol.Session import Session
 from kol.manager.ChatManager import ChatManager
 from bs4 import BeautifulSoup
@@ -71,18 +72,13 @@ class RelayBot(object):
 	
 	def runBot(self):
 		self.forumLogin()
-		i=0
 		while True:
-			i += 1
-			if i % 300: #Every 15 minutes, send /who
-				self.chatManager.sendChatMessage('/who')
-			
+			# Every 15 minutes, send /who
+			if datetime.now().minute % 15 == 0:
+				self.postWho( self.chatManager.sendChatMessage('/who') )
+				
 			chatMessages = self.chatManager.getNewChatMessages()
 			for message in chatMessages:
-				if 'type' in message.keys() and message['type'] == 'who':
-					self.postWho(message)
-					continue
-				
 				if ('channel' in message.keys()
 				and message['channel'] in RelayBot.rooms.keys()
 				and message['userName'] != 'CGRelay'):
