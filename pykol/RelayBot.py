@@ -63,12 +63,8 @@ class RelayBot(object):
 		r = requests.post( 'http://www.crimbogrotto.com/mchat.php', data=data, cookies = self.cookies )
 	
 	def postWho(self, message):
-		toSend = ''
-		
-		for user in message['users']:
-			toSend += '{}, '.format( user['userName'] )
-		
-		self.mchatAdd( toSend[:-2], RelayBot.rooms['who'] )
+		toSend = ', '.join( [user['userName'] for user in message['users']] )
+		self.mchatAdd( toSend, RelayBot.rooms['who'] )
 	
 	def runBot(self):
 		self.forumLogin()
