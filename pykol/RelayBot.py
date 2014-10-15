@@ -27,11 +27,33 @@ class RelayBot(object):
 		self.forumPassword = self.config.get( 'Passwords', 'forumPassword' )
 		self.cookies = {}
 		self.lastMessageID = {0: 0, 1: 0, 2: 0, 3: 0, 5: 0}
-		
+		self.initLogger()
+	
+	def initLogger(self):
 		self.logger = logging.getLogger('RelayBot')
-		self.logger.basicConfig( format='%(levelname)s: %(asctime)s - %(message)s' )
+		formatter = logging.Formatter( '%(levelname)s: %(asctime)s - %(message)s' )
+		
+		logLevel = logging.WARNING
 		if self.config.has_option( 'Misc', 'logLevel' ):
-			self.logger.setLevel( self.config.get( 'DEFAULT', 'logLevel' ) )
+			if self.config.get( 'Misc', 'logLevel' ) == 'DEBUG':
+				logLevel = logging.DEBUG
+			elif self.config.get( 'Misc', 'logLevel' ) == 'INFO':
+				logLevel = logging.INFO
+			elif self.config.get( 'Misc', 'logLevel' ) == 'WARNING':
+				logLevel = logging.WARNING
+			elif self.config.get( 'Misc', 'logLevel' ) == 'ERROR':
+				logLevel = logging.ERROR
+			elif self.config.get( 'Misc', 'logLevel' ) == 'CRITICAL':
+				logLevel = logging.CRITICAL
+			self.logger.setLevel( logLevel )
+			
+		sh = logging.StreamHandler()
+		sh.setFormatter(formatter)
+		logger.addHandler(sh)
+		
+		fh = logging.FileHandler( '{}/RelayBot.log'.format( os.path.dirname( os.path.realpath(__file__) ) ) )
+		fh.setFormatter(formatter)
+		logger.addHandler(fh)
 	
 	def forumLogin(self):		
 		data = {'mode': 'login', 'username': 'CGBot', 'password': self.forumPassword, 'login': 'Login'}
