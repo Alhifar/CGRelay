@@ -30,7 +30,7 @@ class RelayBot(object):
 		
 		self.logger = logging.getLogger('RelayBot')
 		self.logger.basicConfig( format='%(levelname)s: %(asctime)s - %(message)s' )
-		if self.config.has_option( 'DEFAULT', 'logLevel' ):
+		if self.config.has_option( 'Misc', 'logLevel' ):
 			self.logger.setLevel( self.config.get( 'DEFAULT', 'logLevel' ) )
 	
 	def forumLogin(self):		
