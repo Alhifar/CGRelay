@@ -5,6 +5,9 @@ from kol.manager.ChatManager import ChatManager
 from bs4 import BeautifulSoup
 import requests
 import re
+import logging
+import traceback
+import ConfigParser
 
 class RelayBot(object):
 	rooms = {'clan': 0, 'dread': 1, 'hobopolis': 2, 'slimetube': 3, 'talkie': 5, 'who': 6}
@@ -13,14 +16,22 @@ class RelayBot(object):
 	IRCMessagePattern = re.compile('(.+): (.+)')
 	
 	def __init__(self):
+		self.config = ConfigParser.RawConfigParser()
+		self.config.read( '{}/config.cfg'.format( os.path.dirname( os.path.realpath(__file__) ) ) )
+		
 		self.session = Session()
-		with open( 'passwords', 'r' ) as f:
-			self.password = f.readline().strip()
-			self.forumPassword = f.readline().strip()
+		self.password = self.config.get( 'Passwords', 'KoLPassword' )
 		self.session.login( 'CGRelay', self.password )
 		self.chatManager = ChatManager(self.session)
+		
+		self.forumPassword = self.config.get( 'Passwords', 'forumPassword' )
 		self.cookies = {}
 		self.lastMessageID = {0: 0, 1: 0, 2: 0, 3: 0, 5: 0}
+		
+		self.logger = logging.getLogger('RelayBot')
+		self.logger.basicConfig( format='%(levelname)s: %(asctime)s - %(message)s' )
+		if self.config.has_option( 'DEFAULT', 'logLevel' ):
+			self.logger.setLevel( self.config.get( 'DEFAULT', 'logLevel' ) )
 	
 	def forumLogin(self):		
 		data = {'mode': 'login', 'username': 'CGBot', 'password': self.forumPassword, 'login': 'Login'}
@@ -70,23 +81,32 @@ class RelayBot(object):
 		self.forumLogin()
 		needsWho = True
 		while True:
-			# Every 15 minutes, send /who once
-			if needsWho and datetime.now().minute % 15 == 0:
-				self.postWho( self.chatManager.sendChatMessage('/who') )
-				needsWho = False
-			else if datetime.now().minute % 15 != 0:
-				needsWho = True
-				
-			chatMessages = self.chatManager.getNewChatMessages()
-			for message in chatMessages:
-				if ('channel' in message.keys()
-				and message['channel'] in RelayBot.rooms.keys()
-				and message['userName'] != 'CGRelay'):
-					toSend = '[b]{0}:[/b] {1}'.format(message['userName'], message['text'])
-					self.mchatAdd(toSend, RelayBot.rooms[message['channel']])
+			try:
+				# Every 15 minutes, send /who once
+				if needsWho and datetime.now().minute % 15 == 0:
+					self.postWho( self.chatManager.sendChatMessage('/who') )
+					needsWho = False
+				else if datetime.now().minute % 15 != 0:
+					needsWho = True
+			except Exception:
+				self.logger.warning(traceback.format_exc())
 			
-			for room in RelayBot.channels:
-				self.mchatRead(room)
+			try:
+				chatMessages = self.chatManager.getNewChatMessages()
+				for message in chatMessages:
+					if ('channel' in message.keys()
+					and message['channel'] in RelayBot.rooms.keys()
+					and message['userName'] != 'CGRelay'):
+						toSend = '[b]{0}:[/b] {1}'.format(message['userName'], message['text'])
+						self.mchatAdd(toSend, RelayBot.rooms[message['channel']])
+			except Exception:
+				self.logger.warning(traceback.format_exc())
+			
+			try:
+				for room in RelayBot.channels:
+					self.mchatRead(room)
+			except Exception:
+				self.logger.warning(traceback.format_exc())
 			
 			sleep(3)
 
