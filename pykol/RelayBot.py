@@ -8,6 +8,7 @@ import re
 import logging
 import traceback
 import ConfigParser
+import os
 
 class RelayBot(object):
 	rooms = {'clan': 0, 'dread': 1, 'hobopolis': 2, 'slimetube': 3, 'talkie': 5, 'who': 6}
@@ -49,11 +50,11 @@ class RelayBot(object):
 			
 		sh = logging.StreamHandler()
 		sh.setFormatter(formatter)
-		logger.addHandler(sh)
+		self.logger.addHandler(sh)
 		
 		fh = logging.FileHandler( '{}/RelayBot.log'.format( os.path.dirname( os.path.realpath(__file__) ) ) )
 		fh.setFormatter(formatter)
-		logger.addHandler(fh)
+		self.logger.addHandler(fh)
 	
 	def forumLogin(self):		
 		data = {'mode': 'login', 'username': 'CGBot', 'password': self.forumPassword, 'login': 'Login'}
@@ -108,7 +109,7 @@ class RelayBot(object):
 				if needsWho and datetime.now().minute % 15 == 0:
 					self.postWho( self.chatManager.sendChatMessage('/who') )
 					needsWho = False
-				else if datetime.now().minute % 15 != 0:
+				elif datetime.now().minute % 15 != 0:
 					needsWho = True
 			except Exception:
 				self.logger.warning(traceback.format_exc())
