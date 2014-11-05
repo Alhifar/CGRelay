@@ -53,7 +53,8 @@ class RelayBot(object):
         sh.setFormatter(formatter)
         self.logger.addHandler(sh)
 
-        fh = logging.FileHandler('{}/RelayBot.log'.format(os.path.dirname(os.path.realpath(__file__))))
+        fh = logging.FileHandler(
+            '{}/RelayBot_{}.log'.format(os.path.dirname(os.path.realpath(__file__)), date.today().strftime('%d%m%Y')))
         fh.setFormatter(formatter)
         self.logger.addHandler(fh)
 
