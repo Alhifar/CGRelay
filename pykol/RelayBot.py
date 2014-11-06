@@ -3,6 +3,7 @@ from datetime import datetime
 from kol.Session import Session
 from kol.manager.ChatManager import ChatManager
 from bs4 import BeautifulSoup
+from datetime import date
 import requests
 import re
 import logging
