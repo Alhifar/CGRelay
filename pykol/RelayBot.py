@@ -9,6 +9,7 @@ import re
 import logging
 import traceback
 import ConfigParser
+import pytz
 import os
 
 
@@ -74,6 +75,8 @@ class RelayBot(object):
 
         r = requests.post('http://www.crimbogrotto.com/mchat.php', data=data, cookies=self.cookies)
         mchatSoup = BeautifulSoup(r.text)
+
+        # Each message is contained in div with class mChatHover
         for messageDiv in mchatSoup.find_all('div', class_='mChatHover'):
             name = messageDiv.find('a', href=RelayBot.memberlistPattern).string
             self.lastMessageID[roomID] = int(messageDiv['id'][4:])
@@ -81,18 +84,38 @@ class RelayBot(object):
             if name == 'CGBot':
                 continue
 
-            message = messageDiv.find('div', class_='mChatMessage').get_text()
+            message = messageDiv.find('div', class_='mChatMessage')
+
+            # Replace smilies with text of smilie (images are disallowed, so all images should be smilies)
+            imgs = message.find_all('img')
+            for img in imgs:
+                new_tag = mchatSoup.new_tag('div')
+                new_tag.string = img['alt']
+                img.replace_with(new_tag)
+
+            links = message.find_all('a')
+            for link in links:
+                new_tag = mchatSoup.new_tag('div')
+                if link.string != link['href']:
+                    new_tag.string = '{}({})'.format(link.string, link['href'])
+                else:
+                    new_tag.string = link.string
+                link.replace_with(new_tag)
+
+            # Collapse message to only plain text and adjust for correct bracketing based on message source
+            messageText = message.get_text()
             openBracket = '['
             closeBracket = ']'
 
             if name == 'CGIRC':
-                IRCMessageMatch = re.match(RelayBot.IRCMessagePattern, message)
+                IRCMessageMatch = re.match(RelayBot.IRCMessagePattern, messageText)
                 name = IRCMessageMatch.group(1)
-                message = IRCMessageMatch.group(2)
+                messageText = IRCMessageMatch.group(2)
                 openBracket = '{'
                 closeBracket = '}'
 
-            toSend = '/{0} {1}{2}{3} {4}'.format(RelayBot.channels[roomID], openBracket, name, closeBracket, message)
+            toSend = '/{0} {1}{2}{3} {4}'.format(RelayBot.channels[roomID], openBracket, name, closeBracket,
+                                                 messageText)
             self.chatManager.sendChatMessage(toSend)
 
     def mchatAdd(self, message, roomID):
@@ -106,7 +129,9 @@ class RelayBot(object):
     def runBot(self):
         self.forumLogin()
         needsWho = True
-        while True:
+        koltz = pytz.timezone('America/Phoenix')
+        currentTime = koltz.localize(datetime.now())
+        while currentTime.hour != 20 or not (30 <= currentTime.minute <= 45):
             try:
                 # Every 15 minutes, send /who once
                 if needsWho and datetime.now().minute % 15 == 0:
@@ -135,6 +160,8 @@ class RelayBot(object):
                 self.logger.warning(traceback.format_exc())
 
             sleep(3)
+
+            currentTime = koltz.localize(datetime.now())
 
 
 bot = RelayBot()
