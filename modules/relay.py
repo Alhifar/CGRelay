@@ -17,7 +17,7 @@ hiddenPattern = re.compile(r'(?i)irc:.*')
 mchatPattern = re.compile(
     r'<div.+?mess(\d+).+?>.+?<a href=.+?>([^<]+)</a>.+?</span>.+?<div class="mChatMessage">(.+?)</div></div>')
 smiliesPattern = re.compile(r'<img src="\./images/smilies.+?alt="([^"]+?)".+?/>')
-linkPattern = re.compile(r'<a.*?href=\"(.+?)".*?>.*?</a>')
+linkPattern = re.compile(r'<a.*?href=\"(.+?)".*?>(.*?)</a>')
 tagPattern = re.compile(r'<.*?>')
 CGBotMessagePattern = re.compile(r'^(.+?): (.+)$')
 
@@ -71,7 +71,7 @@ def getFromRelay(bot):
             sender = messageMatch.group(2)
             message = messageMatch.group(3)
             message = re.sub(smiliesPattern, r'\1', message)  #Replace smilies from forum
-            message = re.sub(linkPattern, r'\1', message)  #Replace links with just url
+            message = re.sub(linkPattern, r'\2(\1)', message)  #Replace links with url and text
             message = re.sub(tagPattern, '', message)  #Remove all other tags
             openBracket = '{'
             closeBracket = '}'
