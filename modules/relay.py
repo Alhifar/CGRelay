@@ -31,10 +31,10 @@ whoPattern = re.compile(
 def relay(bot, trigger):
     #global logger
     sid = bot.getForumSID()
-    message = re.sub(actionPattern, '', trigger.group(0))  #Remove ACTION from /me messages
-    message = re.sub(colorPattern, '', message)  # Remove color codes
-    message = re.sub(nonAsciiPattern, '', message)  #remove non-ascii characters 'cause forum chat and kol chat are dumb
-    message = re.sub(hiddenPattern, '', message)  #messages starting with "irc:" are hidden from kol chat
+    message = actionPattern.sub('', trigger.group(0))  #Remove ACTION from /me messages
+    message = colorPattern.sub('', message)  # Remove color codes
+    message = nonAsciiPattern.sub('', message)  #remove non-ascii characters 'cause forum chat and kol chat are dumb
+    message = hiddenPattern.sub('', message)  #messages starting with "irc:" are hidden from kol chat
     if message == '':
         return
     toPost = web.quote(u'[b]{0}:[/b] {1}'.format(trigger.nick, message))
@@ -67,24 +67,29 @@ def getFromRelay(bot):
     sid = bot.getForumSID()
     if not 'lastMChatID' in bot.memory.keys():
         text = web.post('http://www.crimbogrotto.com/mchat.php', 'mode=read&room_id=0&sid={0}'.format(sid))
-        messageList = re.findall(mchatPattern, text)
+        messageList = mchatPattern.findall(text)
         bot.memory['lastMChatID'] = int(messageList[-1][0])
 
     params = 'mode=read&room_id=0&message_last_id={0!s}&sid={1}'.format(bot.memory['lastMChatID'], sid)
     text = web.post('http://www.crimbogrotto.com/mchat.php', params)
-    messageIter = re.finditer(mchatPattern, text)
+    messageIter = mchatPattern.finditer(text)
     parser = HTMLParser.HTMLParser()
     for messageMatch in messageIter:
         if messageMatch.group(2) != 'CGIRC':
             sender = messageMatch.group(2)
             message = messageMatch.group(3)
-            message = re.sub(smiliesPattern, r'\1', message)  #Replace smilies from forum
-            message = re.sub(linkPattern, r'\2(\1)', message)  #Replace links with url and text
-            message = re.sub(tagPattern, '', message)  #Remove all other tags
+            message = smiliesPattern.sub(r'\1', message)  #Replace smilies from forum
+            linkMatch = linkPattern.match(message)
+            if linkMatch:
+                if linkMatch.group(1) != linkMatch.group(2):
+                    message = linkPattern.sub(r'\2 (\1)', message)  #Replace links with url and text
+                else:
+                    message = linkPattern.sub(r'\1', message)
+            message = tagPattern.sub('', message)  #Remove all other tags
             openBracket = '{'
             closeBracket = '}'
             if sender == 'CGBot':
-                nameMatch = re.match(CGBotMessagePattern, message)
+                nameMatch = CGBotMessagePattern.match(message)
                 sender = nameMatch.group(1)
                 message = nameMatch.group(2)
                 openBracket = '['
@@ -108,7 +113,7 @@ def denisKick(bot, trigger):
 def who(bot, trigger):
     sid = bot.getForumSID()
     whoText = web.post('http://www.crimbogrotto.com/mchat.php', 'mode=read&room_id=6&sid={0}'.format(sid))
-    messageList = re.findall(whoPattern, whoText)
+    messageList = whoPattern.findall(whoText)
     bot.msg(trigger.nick, messageList[-1][2].decode('utf-8'), relay=False)
 
 
