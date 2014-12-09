@@ -39,7 +39,7 @@ def relay(bot, trigger):
         return
     toPost = web.quote(u'[b]{0}:[/b] {1}'.format(trigger.nick, message))
     web.post('http://www.crimbogrotto.com/mchat.php',
-                    'room_id=0&mode=add&sid={0}&message={1}'.format(sid, toPost))
+             'room_id=0&mode=add&sid={0}&message={1}'.format(sid, toPost))
     return
 
 
@@ -49,6 +49,14 @@ def postBroadcastLine(bot, trigger=None):
         currentSong = songFile.read()
     bot.msg('#crimbogrotto', 'Listen to CG Radio, now playing {0}!'.format(currentSong))
     bot.msg('#crimbogrotto', r'http://grooveshark.com/#!/thecgradio/broadcast')
+
+
+@module.interval(900)
+def postIRCWho(bot, trigger=None):
+    sid = bot.getForumSID()
+    users = bot.privileges['#crimbogrotto'].keys()
+    web.post('http://www.crimbogrotto.com/mchat.php',
+             'room_id=7&mode=add&sid={0}&message={1}'.format(sid, ', '.join(users)))
 
 
 @module.interval(3)
