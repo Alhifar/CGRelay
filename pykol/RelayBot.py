@@ -131,7 +131,7 @@ class RelayBot(object):
         needsWho = True
         koltz = pytz.timezone('America/Phoenix')
         currentTime = koltz.localize(datetime.now())
-        while currentTime.hour != 20 or not (30 <= currentTime.minute <= 45):
+        while currentTime.hour != 21 or not (30 <= currentTime.minute <= 45):
             try:
                 # Every 15 minutes, send /who once
                 if needsWho and datetime.now().minute % 15 == 0:
