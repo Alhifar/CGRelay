@@ -4,8 +4,9 @@ from willie import tools
 import willie.irc as irc
 import re
 import HTMLParser
+from bs4 import BeautifulSoup
 
-logger = tools.OutputRedirect("/home/crimbogrotto/.willie/logs/relaylog.log")
+#logger = tools.OutputRedirect("/home/crimbogrotto/.willie/logs/relaylog.log")
 
 #Patterns for relay()
 actionPattern = re.compile(r'^\x01ACTION')
@@ -13,17 +14,8 @@ colorPattern = re.compile(r'^\x03\d+(?:,\d+)?')
 nonAsciiPattern = re.compile(r'[^\x00-\x7f]')
 hiddenPattern = re.compile(r'(?i)irc:.*')
 
-#Patterns for getFromRelay()
-mchatPattern = re.compile(
-    r'<div.+?mess(\d+).+?>.+?<a href=.+?>([^<]+)</a>.+?</span>.+?<div class="mChatMessage">(.+?)</div></div>')
-smiliesPattern = re.compile(r'<img src="\./images/smilies.+?alt="([^"]+?)".+?/>')
-linkPattern = re.compile(r'<a.*?href=\"(.+?)".*?>(.*?)</a>')
-tagPattern = re.compile(r'<.*?>')
-CGBotMessagePattern = re.compile(r'^(.+?): (.+)$')
-
-#Pattern for who()
-whoPattern = re.compile(
-    r'<div.+?mess(\d+).+?>.+?<a href=.+?>([^<]+)</a>.+?</span>.+?<div class="mChatMessage">(.+?)</div></div>')
+KoLMessagePattern = re.compile(r'^(.+?): (.+)$')
+memberlistPattern = re.compile(r'memberlist\.php')
 
 
 @module.rule('.*')
@@ -61,49 +53,60 @@ def postIRCWho(bot, trigger=None):
 
 @module.interval(3)
 def getFromRelay(bot):
-    global logger
+    #global logger
     if not "#crimbogrotto" in bot.channels:
         return
     sid = bot.getForumSID()
     if not 'lastMChatID' in bot.memory.keys():
         text = web.post('http://www.crimbogrotto.com/mchat.php', 'mode=read&room_id=0&sid={0}'.format(sid))
-        messageList = re.findall(mchatPattern, text)
-        bot.memory['lastMChatID'] = int(messageList[-1][0])
+        lastIDSoup = BeautifulSoup(text)
+        bot.memory['lastMChatID'] = int(lastIDSoup.find_all('div', class_='mChatHover')[-1]['id'][4:])
 
     params = 'mode=read&room_id=0&message_last_id={0!s}&sid={1}'.format(bot.memory['lastMChatID'], sid)
     text = web.post('http://www.crimbogrotto.com/mchat.php', params)
-    messageIter = re.finditer(mchatPattern, text)
-    parser = HTMLParser.HTMLParser()
-    for messageMatch in messageIter:
-        if messageMatch.group(2) != 'CGIRC':
-            sender = messageMatch.group(2)
-            message = messageMatch.group(3)
-            message = re.sub(smiliesPattern, r'\1', message)  #Replace smilies from forum
-            linkMatch = re.search(linkPattern, message)
-            if linkMatch:
-                if linkMatch.group(1) != linkMatch.group(2) and linkMatch.group(2) != '[link]':
-                    message = re.sub(linkPattern, r'\1 (\2)', message)  #Replace links with url and text
-                else:
-                    print(message)
-                    print('\n')
-                    print(linkMatch.group(1))
-                    print('\n')
-                    print(linkMatch.group(0))
-                    message = re.sub(linkPattern, r'\1', message)
-            message = re.sub(tagPattern, '', message)  #Remove all other tags
+    mchatSoup = BeautifulSoup(text)
+    # Each message is contained in div with class mChatHover
+    for messageDiv in mchatSoup.find_all('div', class_='mChatHover'):
+        sender = messageDiv.find('a', href=memberlistPattern).string
+        self.lastMessageID[roomID] = int(messageDiv['id'][4:])
+
+        if sender == 'CGIRC':
+            continue
+
+        message = messageDiv.find('div', class_='mChatMessage')
+
+        # Replace smilies with text of smilie (images are disallowed, so all images should be smilies)
+        imgs = message.find_all('img')
+        for img in imgs:
+            new_tag = mchatSoup.new_tag('div')
+            new_tag.string = img['alt']
+            img.replace_with(new_tag)
+
+        links = message.find_all('a')
+        for link in links:
+            new_tag = mchatSoup.new_tag('div')
+            if link.string != link['href']:
+                new_tag.string = '{} ({})'.format(link['href'], link.string)
+            else:
+                new_tag.string = link.string
+            link.replace_with(new_tag)
+
+        # Collapse message to only plain text and adjust for correct bracketing based on message source
+        messageText = message.get_text()
+        openBracket = '['
+        closeBracket = ']'
+
+        if sender == 'CGBot':
+            KoLMessageMatch = re.match(KoLMessagePattern, messageText)
+            sender = KoLMessageMatch.group(1)
+            messageText = KoLMessageMatch.group(2)
             openBracket = '{'
             closeBracket = '}'
-            if sender == 'CGBot':
-                nameMatch = re.match(CGBotMessagePattern, message)
-                sender = nameMatch.group(1)
-                message = nameMatch.group(2)
-                openBracket = '['
-                closeBracket = ']'
-            if message == '':
-                return
-            toSend = u'{0}{1}{2}: {3}'.format(openBracket, sender, closeBracket, parser.unescape(message))
-            bot.msg('#crimbogrotto', toSend, 10, False)
-            bot.memory['lastMChatID'] = int(messageMatch.group(1))
+        if message == '':
+            return
+        toSend = u'{0}{1}{2}: {3}'.format(openBracket, sender, closeBracket, parser.unescape(messageText))
+        bot.msg('#crimbogrotto', toSend, 10, False)
+        bot.memory['lastMChatID'] = int(messageMatch.group(1))
     return
 
 
@@ -118,8 +121,9 @@ def denisKick(bot, trigger):
 def who(bot, trigger):
     sid = bot.getForumSID()
     whoText = web.post('http://www.crimbogrotto.com/mchat.php', 'mode=read&room_id=6&sid={0}'.format(sid))
-    messageList = re.findall(whoPattern, whoText)
-    bot.msg(trigger.nick, messageList[-1][2].decode('utf-8'), relay=False)
+    lastIDSoup = BeautifulSoup(whoText)
+    whoMessage = lastIDSoup.find_all('div', class_='mChatHover')[-1].text
+    bot.msg(trigger.nick, whoMessage.decode('utf-8'), relay=False)
 
 
 def configure(config):
