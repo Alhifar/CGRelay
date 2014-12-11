@@ -68,7 +68,7 @@ def getFromRelay(bot):
     # Each message is contained in div with class mChatHover
     for messageDiv in mchatSoup.find_all('div', class_='mChatHover'):
         sender = messageDiv.find('a', href=memberlistPattern).string
-        self.lastMessageID[roomID] = int(messageDiv['id'][4:])
+        bot.memory['lastMChatID'] = int(messageDiv['id'][4:])
 
         if sender == 'CGIRC':
             continue
@@ -104,6 +104,7 @@ def getFromRelay(bot):
             closeBracket = '}'
         if message == '':
             return
+        parser = HTMLParser.HTMLParser()
         toSend = u'{0}{1}{2}: {3}'.format(openBracket, sender, closeBracket, parser.unescape(messageText))
         bot.msg('#crimbogrotto', toSend, 10, False)
         bot.memory['lastMChatID'] = int(messageMatch.group(1))
