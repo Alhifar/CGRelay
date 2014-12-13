@@ -17,7 +17,7 @@ class RelayBot(object):
     rooms = {'clan': 0, 'dread': 1, 'hobopolis': 2, 'slimetube': 3, 'talkie': 5, 'who': 6}
     channels = {0: 'clan', 1: 'dread', 2: 'hobopolis', 3: 'slimetube', 5: 'talkie'}
     memberlistPattern = re.compile(r'memberlist\.php')
-    IRCMessagePattern = re.compile(r'(.+): (.+)')
+    IRCMessagePattern = re.compile(r'(.+?): (.+)')
 
     def __init__(self):
         self.config = ConfigParser.RawConfigParser()
