@@ -137,7 +137,7 @@ class RelayBot(object):
                 if needsWho and datetime.now().minute % 15 == 0:
                     self.postWho(self.chatManager.sendChatMessage('/who'))
                     needsWho = False
-                elif datetime.now().minute % 15 != 0:
+                elif not needsWho and datetime.now().minute % 15 != 0:
                     needsWho = True
             except Exception:
                 self.logger.warning(traceback.format_exc())
