@@ -56,7 +56,7 @@ class RelayBot(object):
         self.logger.addHandler(sh)
 
         fh = logging.FileHandler(
-            '{}/RelayBot_{}.log'.format(os.path.dirname(os.path.realpath(__file__)), date.today().strftime('%d%m%Y')))
+            '{}/logs/RelayBot_{}.log'.format(os.path.dirname(os.path.realpath(__file__)), date.today().strftime('%d%m%Y')))
         fh.setFormatter(formatter)
         self.logger.addHandler(fh)
 
@@ -97,7 +97,7 @@ class RelayBot(object):
             for link in links:
                 new_tag = mchatSoup.new_tag('div')
                 if link.string != link['href']:
-                    new_tag.string = '{}({})'.format(link.string, link['href'])
+                    new_tag.string = '{}( {} )'.format(link.string, link['href'])
                 else:
                     new_tag.string = link.string
                 link.replace_with(new_tag)

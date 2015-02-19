@@ -107,7 +107,7 @@ def getFromRelay(bot):
         parser = HTMLParser.HTMLParser()
         toSend = u'{0}{1}{2}: {3}'.format(openBracket, sender, closeBracket, parser.unescape(messageText))
         bot.msg('#crimbogrotto', toSend, 10, False)
-        bot.memory['lastMChatID'] = int(messageMatch.group(1))
+        bot.memory['lastMChatID'] = int(KoLMessageMatch.group(1))
     return
 
 
